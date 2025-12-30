@@ -38,7 +38,6 @@ def get_books(user, offset=0, limit=10, is_verbose=False, is_quiet=False):
     
     url, r, data = book_request(user, offset, limit)
     
-    print(f'You have {str(r.json()["count"])} books')
     print("Getting list of books...")
     
     if not is_quiet:
@@ -121,13 +120,14 @@ def make_zip(filename):
 
 
 def move_current_files(root, book):
-    sub_dir = f'{root}/{book}'
+    sub_dir = '%s/%s' % (root, book)
+    sub_dir2 = '%s/%s' % (sub_dir, book)
     does_dir_exist(sub_dir)
     for f in glob.iglob(sub_dir + '.*'):
         try:
-            os.rename(f, f'{sub_dir}/{book}' + f[f.index('.'):])
+            os.rename(f, sub_dir2 + f[f.index('.'):])
         except OSError:
-            os.rename(f, f'{sub_dir}/{book}' + '_1' + f[f.index('.'):])
+            os.rename(f, sub_dir2 + '_1' + f[f.index('.'):])
         except ValueError as e:
             print(e)
             print('Skipping')
@@ -208,10 +208,10 @@ def main(argv):
             if file_type in book_file_types:  # check if the file type entered is available by the current book
                 book_name = book['productName'].replace(' ', '_').replace('.', '_').replace(':', '_').replace('/','')
                 if separate:
-                    filename = f'{root_directory}/{book_name}/{book_name}.{file_type}'
+                    filename = '%s/%s/%s.%s' % (root_directory, book_name, book_name, file_type)
                     move_current_files(root_directory, book_name)
                 else:
-                    filename = f'{root_directory}/{book_name}.{file_type}'
+                    filename = '%s/%s.%s' % (root_directory, book_name, file_type)
                 # get url of the book to download
                 url = get_url_book(user, book['productId'], file_type)
                 if not os.path.exists(filename) and not os.path.exists(filename.replace('.code', '.zip')):
@@ -219,7 +219,7 @@ def main(argv):
                     make_zip(filename)
                 else:
                     if verbose:
-                        tqdm.write(f'{filename} already exists, skipping.')
+                        pass
 
 
 if __name__ == '__main__':
